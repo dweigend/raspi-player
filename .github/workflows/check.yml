@@ -15,6 +15,7 @@ jobs:
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: uv run ty check
+      - run: uv run ty check --exclude src/raspi_player/payload
+      - run: uv run ty check --python-platform linux src/raspi_player/payload
       - run: uv run pytest
       - run: uv build

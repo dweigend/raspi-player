@@ -34,8 +34,8 @@ uv run raspi-player
 ```
 
 `prepare-offline` is the **one-time online preparation step**. It obtains the
-pinned OS image and native Raspberry Pi Imager. Windows bundle preparation also
-requires 7-Zip. Finished bundles include Python and need neither developer tools
+pinned OS image and native Raspberry Pi Imager. Windows preparation downloads a
+checksum-pinned Inno Setup unpacker. Finished bundles include Python and need neither developer tools
 nor internet on the operator's computer.
 
 Non-destructive developer commands:
@@ -65,7 +65,8 @@ the GUI's explicit card confirmation. Never store source files on the target car
 ```sh
 uv run ruff check .
 uv run ruff format --check .
-uv run ty check
+uv run ty check --exclude src/raspi_player/payload
+uv run ty check --python-platform linux src/raspi_player/payload
 uv run pytest
 uv build
 uv run python scripts/build_app.py

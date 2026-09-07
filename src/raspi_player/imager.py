@@ -19,6 +19,8 @@ def find_imager(assets: Path) -> Path:
         installed = Path(os.environ.get("ProgramFiles(x86)", "C:/Program Files (x86)"))
         candidates = [
             assets / "imager/rpi-imager.exe",
+            Path(os.environ.get("ProgramFiles", "C:/Program Files"))
+            / "Raspberry Pi Ltd/Imager/rpi-imager.exe",
             installed / "Raspberry Pi Imager/rpi-imager.exe",
         ]
     else:

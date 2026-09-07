@@ -4,7 +4,9 @@ import plistlib
 import shutil
 import subprocess
 import sys
+import tempfile
 import urllib.request
+import zipfile
 from pathlib import Path
 
 from raspi_player.files import Progress, copy_stream, sha256
@@ -23,6 +25,11 @@ IMAGER_ASSETS = {
         "94ffded522f3e2a38bdb9505440229e1411b80992a616ba16b2d7e73bd794130",
     ),
 }
+INNOUNP_ASSET = (
+    "https://raw.githubusercontent.com/jrathlev/InnoUnpacker-Windows-GUI/"
+    "6fb49264aacf512a093e7b4fc6fb3dd266dad31a/innounp-2/bin/innounp-267.zip",
+    "ac1d98bba6588072ade06163781938df274f444bec7318069668608d1e5faae8",
+)
 
 
 def download(asset: tuple[str, str], destination: Path, progress: Progress) -> None:
@@ -64,26 +71,32 @@ def extract_mac(installer: Path, destination: Path) -> None:
         )
 
 
-def extract_windows(installer: Path, destination: Path) -> None:
-    """Use 7-Zip to unpack the official NSIS installer without installing it."""
-    executable = shutil.which("7z") or shutil.which("7z.exe")
-    if executable is None:
-        candidate = Path("C:/Program Files/7-Zip/7z.exe")
-        executable = str(candidate) if candidate.is_file() else None
-    if executable is None:
-        raise ValueError(
-            "Offline-bundle preparation requires 7-Zip. "
-            "End users need only the finished bundle."
+def extract_windows(installer: Path, destination: Path, progress: Progress) -> None:
+    """Unpack Inno Setup without executing its installer or modifying Windows."""
+    with tempfile.TemporaryDirectory(prefix="raspi-player-unpack-") as temporary:
+        staging = Path(temporary)
+        archive = staging / "innounp.zip"
+        download(INNOUNP_ASSET, archive, progress)
+        with zipfile.ZipFile(archive) as bundle:
+            bundle.extract("innounp.exe", staging)
+        subprocess.run(
+            [
+                str(staging / "innounp.exe"),
+                "-x",
+                "-b",
+                "-y",
+                "-a",
+                f"-d{staging / 'extracted'}",
+                str(installer.resolve()),
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
         )
-    subprocess.run(
-        [executable, "x", "-y", f"-o{destination}", str(installer)],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
-    if not (destination / "rpi-imager.exe").is_file():
-        raise ValueError(
-            "Unexpected Imager installer layout; rpi-imager.exe is missing."
-        )
+        application = staging / "extracted" / "{app}"
+        for name in ("rpi-imager.exe", "Qt6Core.dll", "platforms/qwindows.dll"):
+            if not (application / name).is_file():
+                raise ValueError(f"Unexpected Imager installer layout: missing {name}")
+        shutil.copytree(application, destination, dirs_exist_ok=True)
 
 
 def prepare(destination: Path, progress: Progress) -> None:
@@ -101,5 +114,5 @@ def prepare(destination: Path, progress: Progress) -> None:
     if sys.platform == "darwin":
         extract_mac(installer, imager)
     else:
-        extract_windows(installer, imager)
+        extract_windows(installer, imager, progress)
     progress(f"Offline assets ready: {destination.resolve()}")
