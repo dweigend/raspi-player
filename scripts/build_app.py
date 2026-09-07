@@ -17,15 +17,8 @@ def build() -> None:
         "PyInstaller",
         "--noconfirm",
         "--clean",
-        "--windowed",
-        "--name",
-        "Raspi Player",
+        str(root / "scripts/raspi-player.spec"),
     ]
-    for package in ("raspi_player", "FATtools", "pyfatfs", "fs"):
-        args.extend(["--collect-all", package])
-    if sys.platform == "win32":
-        args.append("--uac-admin")
-    args.append(str(root / "src/raspi_player/__main__.py"))
     subprocess.run(args, cwd=root, check=True)
     target = root / "dist"
     if sys.platform == "win32":

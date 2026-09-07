@@ -13,6 +13,7 @@ wheels/
 .cache/
 offline/
 *.spec
+!scripts/raspi-player.spec
 .pytest_cache/
 .ruff_cache/
 __pycache__/

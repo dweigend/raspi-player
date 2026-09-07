@@ -23,6 +23,12 @@ No network, keyboard, login, or downloads are needed on the Pi. Allow extra time
 for first-boot setup and its automatic reboot. A short pause between loops is
 acceptable. The OS may request administrator access when writing the card.
 
+On macOS, allow the system prompt for access to removable volumes so the app can
+detect the SD card. Discovery runs in the background and never writes to a card.
+If it times out, check for a pending macOS permission prompt, then click
+**Refresh cards**. Full Disk Access is not a prerequisite. Unsigned development
+rebuilds may cause macOS to request permission again.
+
 ## Run from source
 
 Development requires [uv](https://docs.astral.sh/uv/) and Python 3.13 with Tk.

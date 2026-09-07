@@ -24,6 +24,8 @@ class PlayerWindow:
         self.video = tk.StringVar()
         self.status = tk.StringVar(value="Choose an SD card and a video.")
         self.events: queue.Queue[tuple[str, str]] = queue.Queue()
+        self.scan_results: queue.Queue[list[Device] | Exception] = queue.Queue()
+        self.scanning = False
         self.busy = False
         root.title("Raspi Player")
         root.geometry("660x370")
@@ -64,19 +66,42 @@ class PlayerWindow:
         )
 
     def refresh(self) -> None:
+        """Query native devices off-thread so a slow reader cannot freeze startup."""
+        if self.busy or self.scanning:
+            return
+        self.devices = []
+        self.card.configure(values=())
+        self.card.set("")
+        self.set_scanning(True)
+        self.status.set("Looking for SD cards…")
+        threading.Thread(target=self.scan_cards, daemon=True).start()
+
+    def set_scanning(self, scanning: bool) -> None:
+        self.scanning = scanning
+        self.card.configure(state="disabled" if scanning else "readonly")
+        for button in (self.refresh_button, self.start_button):
+            button.configure(state="disabled" if scanning else "normal")
+
+    def scan_cards(self) -> None:
+        """Return read-only discovery results without accessing any Tk objects."""
         try:
-            self.devices = list_devices()
-            self.card.configure(values=[device.label for device in self.devices])
-            self.card.set("")
-            self.status.set(
-                "Choose a card."
-                if self.devices
-                else "No writable SD card found. Insert a card and refresh."
-            )
+            self.scan_results.put(list_devices())
         except Exception as error:
-            self.devices = []
-            self.card.set("")
-            self.status.set(str(error))
+            self.scan_results.put(error)
+
+    def finish_scan(self, result: list[Device] | Exception) -> None:
+        """Apply discovery on the UI thread; never preselect a destructive target."""
+        self.set_scanning(False)
+        if isinstance(result, Exception):
+            self.status.set(f"Could not read SD cards: {result}")
+            return
+        self.devices = result
+        self.card.configure(values=[device.label for device in result])
+        self.status.set(
+            "Choose a card."
+            if result
+            else "No writable SD card found. Insert a card and refresh."
+        )
 
     def choose_video(self) -> None:
         filename = filedialog.askopenfilename(
@@ -90,6 +115,8 @@ class PlayerWindow:
             self.video.set(filename)
 
     def start(self) -> None:
+        if self.busy or self.scanning:
+            return
         index = self.card.current()
         if index < 0 or index >= len(self.devices) or not self.video.get():
             messagebox.showerror(
@@ -130,6 +157,8 @@ class PlayerWindow:
         self.progress.start() if busy else self.progress.stop()
 
     def poll(self) -> None:
+        if not self.scan_results.empty():
+            self.finish_scan(self.scan_results.get_nowait())
         while not self.events.empty():
             kind, text = self.events.get_nowait()
             self.status.set(text)
