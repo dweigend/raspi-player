@@ -32,9 +32,13 @@ def build() -> None:
         target /= "Raspi Player"
     if not (root / "offline/base.img.xz").is_file():
         raise RuntimeError("Run prepare-offline before building the offline bundle.")
-    shutil.copytree(
-        root / "offline", target / "offline", dirs_exist_ok=True, symlinks=True
-    )
+    if sys.platform == "darwin":
+        # ditto also replaces existing framework symlinks on subsequent builds.
+        subprocess.run(
+            ["ditto", str(root / "offline"), str(target / "offline")], check=True
+        )
+    else:
+        shutil.copytree(root / "offline", target / "offline", dirs_exist_ok=True)
     for name in ("README.md", "THIRD_PARTY.md"):
         shutil.copyfile(root / name, target / name)
     print(f"Portable bundle: {target}")
