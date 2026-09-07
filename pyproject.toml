@@ -1,0 +1,34 @@
+[project]
+name = "raspi-player"
+version = "0.1.0"
+description = "Offline Raspberry Pi 5 video-player SD card creator for macOS and Windows"
+readme = "README.md"
+authors = [
+    { name = "David Weigend", email = "david.weigend@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fattools==1.1.23",
+    "rich>=15.0.0",
+]
+
+[project.scripts]
+raspi-player = "raspi_player:main"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.22.2",
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
+    "ty>=0.0.78",
+]
