@@ -33,7 +33,7 @@ def mac_device(info: Mapping[str, object]) -> Device | None:
     removable = info.get("RemovableMedia") is True
     external = info.get("Internal") is False
     sd_reader = info.get("BusProtocol") in ("Secure Digital", "SD") and removable
-    if not (external or sd_reader) or info.get("Whole") is not True:
+    if not (external or sd_reader) or info.get("WholeDisk") is not True:
         return None
     if info.get("VirtualOrPhysical") != "Physical" or info.get("Writable") is not True:
         return None

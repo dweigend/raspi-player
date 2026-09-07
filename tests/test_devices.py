@@ -14,7 +14,7 @@ def mac_info() -> dict[str, object]:
     return {
         "DeviceIdentifier": "disk7",
         "Internal": False,
-        "Whole": True,
+        "WholeDisk": True,
         "VirtualOrPhysical": "Physical",
         "Writable": True,
         "TotalSize": 32_000_000_000,
@@ -28,7 +28,7 @@ def mac_info() -> dict[str, object]:
     "field,value",
     [
         ("Internal", True),
-        ("Whole", False),
+        ("WholeDisk", False),
         ("Writable", False),
         ("VirtualOrPhysical", "Virtual"),
         ("DeviceIdentifier", "disk7s1"),
@@ -50,6 +50,28 @@ def test_mac_accepts_external_and_internal_sd_reader(
     assert mac_device(mac_info) is not None
     mac_info.update(Internal=True, RemovableMedia=True, BusProtocol="Secure Digital")
     assert mac_device(mac_info) is not None
+
+
+def test_mac_requires_native_whole_disk_field(mac_info: dict[str, object]) -> None:
+    """An unrelated Whole field must not replace diskutil's WholeDisk flag."""
+    del mac_info["WholeDisk"]
+    mac_info["Whole"] = True
+    assert mac_device(mac_info) is None
+
+
+def test_mac_list_includes_builtin_sd_reader(
+    mac_info: dict[str, object], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay diskutil's native plist shape through discovery, not just parsing."""
+    import plistlib
+
+    mac_info.update(Internal=True, RemovableMedia=True, BusProtocol="Secure Digital")
+    responses = iter(
+        [plistlib.dumps({"WholeDisks": ["disk7"]}), plistlib.dumps(mac_info)]
+    )
+    monkeypatch.setattr(devices.sys, "platform", "darwin")
+    monkeypatch.setattr(devices, "command", lambda args: next(responses))
+    assert [device.path for device in devices.list_devices()] == ["/dev/disk7"]
 
 
 def test_windows_blocks_system_disk_even_when_usb() -> None:
