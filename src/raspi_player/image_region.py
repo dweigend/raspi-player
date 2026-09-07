@@ -36,7 +36,9 @@ class ImageRegion:
 
     def read(self, size: int = -1) -> bytearray:
         remaining = self.size - self.tell()
-        return bytearray(self._file.read(remaining if size < 0 else min(size, remaining)))
+        return bytearray(
+            self._file.read(remaining if size < 0 else min(size, remaining))
+        )
 
     def write(self, data: bytes | bytearray | memoryview) -> int:
         if self.tell() + len(data) > self.size:

@@ -9,7 +9,9 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "fattools==1.1.23",
+    "pyfatfs>=1.1.0",
     "rich>=15.0.0",
+    "setuptools<81",
 ]
 
 [project.scripts]

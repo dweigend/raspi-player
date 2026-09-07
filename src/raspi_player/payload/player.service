@@ -1,0 +1,12 @@
+# Own the single VLC process inside the ready kiosk session.
+[Unit]
+Description=Offline Raspberry Pi video player
+StartLimitIntervalSec=0
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/python3 /etc/raspi-player/play.py
+Restart=always
+RestartSec=10
+TimeoutStopSec=10
+NoNewPrivileges=true

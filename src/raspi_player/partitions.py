@@ -56,7 +56,9 @@ def append_media_partition(image: Path, video_size: int) -> Partition:
     size = composed_size(image.stat().st_size, video_size) - start
     if (start + size) // SECTOR >= 2**32:
         raise ValueError("This MBR image cannot exceed 2 TiB.")
-    entry = ENTRY.pack(0, b"\xfe\xff\xff", 7, b"\xfe\xff\xff", start // SECTOR, size // SECTOR)
+    entry = ENTRY.pack(
+        0, b"\xfe\xff\xff", 7, b"\xfe\xff\xff", start // SECTOR, size // SECTOR
+    )
     with image.open("r+b") as stream:
         stream.seek(TABLE_OFFSET + 2 * ENTRY.size)
         stream.write(entry)

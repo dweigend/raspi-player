@@ -1,0 +1,3 @@
+#!/bin/sh
+# Stop the player when its compositor session ends.
+systemctl --user stop raspi-player.service

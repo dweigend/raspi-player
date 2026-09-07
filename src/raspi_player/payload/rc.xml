@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Minimal kiosk session: no panel, desktop launcher or idle-screen manager. -->
+<labwc_config>
+  <core><gap>0</gap></core>
+</labwc_config>

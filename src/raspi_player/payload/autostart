@@ -1,0 +1,4 @@
+#!/bin/sh
+# Import the real compositor session before starting the supervised player.
+systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_RUNTIME_DIR XDG_SESSION_TYPE
+systemctl --user start raspi-player.service
