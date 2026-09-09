@@ -74,3 +74,21 @@ def test_disconnected_hdmi_status_is_recorded(tmp_path: Path) -> None:
     (connector / "status").write_text("disconnected\n")
     (connector / "modes").write_text("")
     assert "disconnected" in diagnose.display_state(tmp_path)
+
+
+def test_missing_player_still_exports_system_report(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pwd = pytest.importorskip("pwd")
+    monkeypatch.setattr(pwd, "getpwnam", Mock(side_effect=KeyError("player")))
+    monkeypatch.setattr(diagnose, "BOOT", tmp_path)
+    capture = Mock(return_value="probe recorded\n")
+    monkeypatch.setattr(diagnose, "capture", capture)
+    monkeypatch.setattr(diagnose, "display_state", Mock(return_value=""))
+    monkeypatch.setattr(diagnose, "file_tail", Mock(return_value=""))
+    diagnose.main()
+    report = (tmp_path / "raspi-diagnostics.txt").read_text()
+    assert "player account is missing" in report
+    assert "probe recorded" in report
+    assert not any(call.args[0][0] == "runuser" for call in capture.call_args_list)

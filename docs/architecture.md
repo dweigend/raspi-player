@@ -46,11 +46,28 @@ keeps its own autostart and window configuration; the stock desktop is not start
 VLC explicitly uses the Pi OS `wl-dmabuf` output and `wl-xdg-shell` window
 provider inside labwc. The compositor keeps the monitor's preferred display mode;
 VLC scales the video to fullscreen without changing its source resolution.
-The user service starts the installed PipeWire/WirePlumber services first.
+The user service starts the installed PipeWire/WirePlumber services concurrently.
 `pw-dump` provides output nodes and connected ALSA routes; `wpctl` unmutes the
 selected HDMI node at unity volume. `PULSE_SINK` routes VLC's PulseAudio output
 to that node. No extra audio packages are required. If HDMI audio is unavailable,
 the player logs the reason and starts video without sound rather than blocking it.
+
+Before every VLC launch, systemd runs the GTK startup checkpoint as ExecStartPre.
+The fullscreen message "Player wird gestartet" remains for ten seconds after
+the window's map event. Failure or premature closure blocks VLC; a 45-second
+service startup timeout bounds missing map events. The screen uses GTK and GI
+already installed in the pinned OS and does not wait for audio initialization.
+Window mapping is a software checkpoint, not proof that the monitor displays it.
+
+A separate early service disables default service dependencies and waits only
+for bootfs. It records pending systemd jobs in `raspi-early-boot.txt`; it does not
+order or delay graphical startup. Managed player config directories and files
+are normalized to 0755/0644 during installation and repair.
+
+LightDM's pre-start hook writes `raspi-boot.txt` directly and includes the preceding
+boot's relevant journal. Hook errors do not prevent LightDM from starting.
+The diagnostic exporter also has a separate, truncated-per-run stdout/stderr file,
+so its own exceptions remain readable even when its report generation fails.
 
 Diagnostics run independently of playback. journald persists logs with a 32 MiB
 budget, 4 MiB journal segments and seven-day retention. A low-priority systemd

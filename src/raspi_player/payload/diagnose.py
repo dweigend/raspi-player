@@ -72,7 +72,7 @@ def user_commands(uid: int) -> list[list[str]]:
     ]
 
 
-def commands(uid: int) -> list[list[str]]:
+def commands(uid: int | None) -> list[list[str]]:
     """Limit journal output to the player/session plus recent kernel diagnostics."""
     journal = ["journalctl", "--no-pager", "-o", "short-iso", "-n", "100"]
     session = [
@@ -96,7 +96,7 @@ def commands(uid: int) -> list[list[str]]:
         ["findmnt", "/srv/raspi-player"],
         ["kmsprint"],
         ["vcgencmd", "get_throttled"],
-        *user_commands(uid),
+        *(user_commands(uid) if uid is not None else []),
     ]
 
 
@@ -116,16 +116,24 @@ def save_report(directory: Path, report: str) -> None:
 def main() -> None:
     import pwd
 
-    user = pwd.getpwnam("player")
+    print("DIAGNOSTICS_BEGIN: collecting boot and player state", flush=True)
     report = f"Raspi Player diagnostics: {datetime.now(UTC).isoformat()}\n"
-    report += "".join(capture(command) for command in commands(user.pw_uid))
+    try:
+        user = pwd.getpwnam("player")
+    except KeyError:
+        user = None
+        report += "ERROR: player account is missing; collecting system state.\n"
+    report += "".join(
+        capture(command) for command in commands(user.pw_uid if user else None)
+    )
     report += display_state(Path("/sys/class/drm"))
     for path in (
-        Path(user.pw_dir) / ".xsession-errors",
+        Path(user.pw_dir if user else "/home/player") / ".xsession-errors",
         Path("/var/log/lightdm/lightdm.log"),
     ):
         report += file_tail(path)
     save_report(BOOT, report)
+    print("DIAGNOSTICS_COMPLETE: report saved", flush=True)
 
 
 if __name__ == "__main__":

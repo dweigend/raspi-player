@@ -24,6 +24,7 @@ def run(*args: str) -> None:
 def write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
+    path.chmod(0o644)
 
 
 def create_user() -> pwd.struct_passwd:
@@ -70,10 +71,14 @@ def configure_lightdm(path: Path) -> None:
 
 def install_player() -> None:
     CONFIG.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(SOURCE / "play.py", CONFIG / "play.py")
+    CONFIG.chmod(0o755)
+    for name in ("play.py", "startup.py"):
+        shutil.copyfile(SOURCE / name, CONFIG / name)
     install_diagnostics()
     install_labwc()
     install_media_mount()
+    for path in CONFIG.rglob("*"):
+        path.chmod(0o755 if path.is_dir() else 0o644)
 
 
 def install_labwc() -> None:
@@ -102,6 +107,11 @@ def install_media_mount() -> None:
 def install_diagnostics() -> None:
     """Keep bounded journals and periodic boot-volume reports across reboots."""
     shutil.copyfile(SOURCE / "diagnose.py", CONFIG / "diagnose.py")
+    shutil.copyfile(SOURCE / "boot-check.sh", CONFIG / "boot-check.sh")
+    write(
+        Path("/etc/systemd/system/lightdm.service.d/player-diagnostics.conf"),
+        "[Service]\nExecStartPre=-/bin/sh /etc/raspi-player/boot-check.sh\n",
+    )
     Path("/etc/systemd/system/graphical.target.wants/raspi-diagnostics.service").unlink(
         missing_ok=True
     )
@@ -116,7 +126,11 @@ def install_diagnostics() -> None:
         "SystemKeepFree=128M\nRuntimeMaxUse=8M\nMaxRetentionSec=7day\n"
         "RateLimitIntervalSec=30s\nRateLimitBurst=300\n",
     )
-    run("systemctl", "enable", "raspi-diagnostics.timer")
+    shutil.copyfile(
+        SOURCE / "boot-check.service",
+        Path("/etc/systemd/system/raspi-boot-check.service"),
+    )
+    run("systemctl", "enable", "raspi-boot-check.service", "raspi-diagnostics.timer")
 
 
 def finish_setup() -> None:

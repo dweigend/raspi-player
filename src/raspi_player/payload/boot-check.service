@@ -1,0 +1,14 @@
+# Record boot progress independently of graphical and normal service startup.
+[Unit]
+Description=Early Raspi Player boot checkpoint
+DefaultDependencies=no
+RequiresMountsFor=/boot/firmware
+After=boot-firmware.mount
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /etc/raspi-player/boot-check.sh early
+TimeoutStartSec=20
+
+[Install]
+WantedBy=sysinit.target

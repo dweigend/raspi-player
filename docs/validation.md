@@ -27,9 +27,26 @@ Until these checks are recorded, playback is **not hardware validated**.
 
 ### Always-on diagnostics
 
+The visible startup sequence is: boot, graphical session, fullscreen
+"Player wird gestartet" for ten seconds, then VLC. If that screen never appears,
+VLC has not passed its startup checkpoint. If it appears and then video fails,
+inspect the player and audio logs next. A repeated screen may indicate service
+retries, not successful playback.
+
+`raspi-early-boot.txt` is written after bootfs mounts, independently of normal
+service startup and LightDM. It records pending systemd jobs. If this file is
+missing, investigate the bootfs mount and earlier boot stages.
+
+`raspi-boot.txt` is written directly before LightDM starts; it does not depend on
+the periodic diagnostic timer. It retains the prior report as
+`raspi-boot-previous.txt`. `raspi-diagnostic-service.txt` contains the latest
+exporter's own stdout/stderr, including any traceback. These distinguish failure
+before graphical startup from a failure inside the logging service.
+
 Logging can stay enabled after playback works. The first setup writes
 `raspi-setup.txt` on the boot partition, including Python exceptions. After a
-normal boot, `raspi-diagnostics.txt` appears after approximately 30 seconds and
+normal boot, `raspi-diagnostics.txt` appears after the 30-second timer and normal
+service dependencies are ready, and
 is refreshed every five minutes; `raspi-diagnostics-previous.txt` retains the
 preceding report. Each report is capped at 128 KiB. Insert the card into a Mac
 to read these files on `bootfs` without mounting the Linux partition.

@@ -5,6 +5,8 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
+StandardOutput=truncate:/boot/firmware/raspi-diagnostic-service.txt
+StandardError=inherit
 ExecStart=/usr/bin/python3 /etc/raspi-player/diagnose.py
 TimeoutStartSec=90
 Nice=19
