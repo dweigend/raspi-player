@@ -98,15 +98,43 @@ def revalidate(selected: Device) -> Device:
     return matches[0]
 
 
+def mac_source_disks(path: Path) -> set[str]:
+    """Resolve an existing source or future output through its mounted filesystem."""
+    existing = path if path.exists() else path.parent
+    rows = command(["df", "-P", str(existing)]).decode().splitlines()
+    fields = rows[1].split() if len(rows) > 1 else []
+    if not fields or not re.fullmatch(r"/dev/disk\d+(?:s\d+)*", fields[0]):
+        raise ValueError(f"Cannot determine the source disk: {path}")
+    info = plistlib.loads(command(["diskutil", "info", "-plist", fields[0]]))
+    return mac_physical_disks(info)
+
+
+def mac_physical_disks(info: Mapping[str, object]) -> set[str]:
+    """Compare APFS backing stores, not the synthetic container, with the target."""
+    if "APFSContainerReference" in info:
+        stores = info.get("APFSPhysicalStores")
+        if not isinstance(stores, list) or not stores:
+            raise ValueError("Cannot determine the APFS source disks.")
+        identifiers = [
+            store.get("APFSPhysicalStore") if isinstance(store, dict) else None
+            for store in stores
+        ]
+    else:
+        identifiers = [info.get("ParentWholeDisk") or info.get("DeviceIdentifier")]
+    disks = set()
+    for identifier in identifiers:
+        match = re.fullmatch(r"(disk\d+)(?:s\d+)*", str(identifier))
+        if match is None:
+            raise ValueError("Cannot determine the source disk.")
+        disks.add(f"/dev/{match[1]}")
+    return disks
+
+
 def require_other_disk(path: Path, selected: Device) -> None:
     """Do not erase a card that holds the video, image, or application assets."""
     path = path.resolve()
     if sys.platform == "darwin":
-        info = plistlib.loads(command(["diskutil", "info", "-plist", str(path.parent)]))
-        whole = info.get("ParentWholeDisk") or info.get("DeviceIdentifier")
-        if whole is None:
-            raise ValueError(f"Cannot determine the source disk: {path}")
-        source = f"/dev/{whole}"
+        sources = mac_source_disks(path)
     elif sys.platform == "win32":
         drive = path.drive
         if not re.fullmatch(r"[A-Za-z]:", drive):
@@ -115,10 +143,10 @@ def require_other_disk(path: Path, selected: Device) -> None:
         number = powershell(script).decode().strip()
         if not number.isdecimal():
             raise ValueError(f"Cannot determine the source disk: {path}")
-        source = rf"\\.\PhysicalDrive{number}"
+        sources = {rf"\\.\PhysicalDrive{number}"}
     else:
         raise RuntimeError("Unsupported card-writing platform.")
-    if source == selected.path:
+    if selected.path in sources:
         raise ValueError(
             "The selected card contains an input file. Move it to the computer first."
         )
