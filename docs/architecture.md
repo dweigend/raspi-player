@@ -35,6 +35,14 @@ Wayland environment before starting the service. The runtime validates one local
 file and replaces itself with VLC; systemd retries exited processes after ten
 seconds. This detects process exits, not frozen video decoding.
 
+The custom labwc directory includes a copy of the pinned OS's
+`/etc/xdg/labwc/environment`. The `-C` option replaces the configuration search
+path, so omitting this file loses Pi-specific defaults, including
+`WLR_DRM_FORCE_LIBLIFTOFF=1` and the Xwayland authentication wrapper. The kiosk
+keeps its own autostart and window configuration; the stock desktop is not started.
+`systemd-cat` connects the compositor's output to the bounded journal under
+`raspi-session` instead of allowing verbose compositor output to grow a text log.
+
 VLC explicitly uses the Pi OS `wl-dmabuf` output and `wl-xdg-shell` window
 provider inside labwc. The compositor keeps the monitor's preferred display mode;
 VLC scales the video to fullscreen without changing its source resolution.
@@ -43,6 +51,16 @@ The user service starts the installed PipeWire/WirePlumber services first.
 selected HDMI node at unity volume. `PULSE_SINK` routes VLC's PulseAudio output
 to that node. No extra audio packages are required. If HDMI audio is unavailable,
 the player logs the reason and starts video without sound rather than blocking it.
+
+Diagnostics run independently of playback. journald persists logs with a 32 MiB
+budget, 4 MiB journal segments and seven-day retention. A low-priority systemd
+timer exports status after 30 seconds and then five minutes after each completed
+export. Each probe has a five-second timeout. The boot volume retains the latest
+and previous reports, each capped at 128 KiB. Reports include player/session
+failures from the current and previous boot, connector state, display mode,
+HDMI audio state and throttling. No diagnostic command changes display settings,
+restarts services or enters the video frame loop. Small periodic I/O remains;
+the limits prevent unbounded logging, not all hardware overhead or power-loss risk.
 
 The FATtools integration is confined to exFAT. A bounded standard-file adapter
 avoids its macOS raw-device ioctls. pyfatfs handles stock FAT32 independently.

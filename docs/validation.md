@@ -25,6 +25,27 @@ Until these checks are recorded, playback is **not hardware validated**.
 
 ## Troubleshooting
 
+### Always-on diagnostics
+
+Logging can stay enabled after playback works. The first setup writes
+`raspi-setup.txt` on the boot partition, including Python exceptions. After a
+normal boot, `raspi-diagnostics.txt` appears after approximately 30 seconds and
+is refreshed every five minutes; `raspi-diagnostics-previous.txt` retains the
+preceding report. Each report is capped at 128 KiB. Insert the card into a Mac
+to read these files on `bootfs` without mounting the Linux partition.
+
+The reports distinguish repeated player exits, compositor/session failures,
+disconnected HDMI connectors, the current display mode and missing audio routes.
+Native journals retain more detail across reboots with a 32 MiB storage budget.
+An abrupt power cut can lose recent buffered messages; allow at least one minute
+after a failed boot before collecting the card. No remote login is enabled.
+
+The missing stock labwc environment was confirmed by inspecting the pinned OS
+image. Preserving it fixes a configuration omission; confirmation that it resolves
+the reported black screen and flicker still requires the device logs and a boot test.
+
+### Common failures
+
 - No card: refresh, inspect the reader's write-protect switch. Unknown/virtual
   devices and non-512-byte sectors are rejected.
 - Missing assets: run `prepare-offline` online or restore the adjacent `offline` folder.

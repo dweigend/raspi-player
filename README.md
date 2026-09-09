@@ -62,7 +62,9 @@ the GUI's explicit card confirmation. Never store source files on the target car
 - macOS or Windows and a writable SD reader using 512-byte sectors.
 - One video; files over 4 GB use exFAT. A filename extension does not establish
   codec support. Test the real file, especially HEVC profiles and 4K frame rates.
-- Media is read-only and logs use RAM. The OS root remains writable; arbitrary
+- Media is read-only. Rotating diagnostic journals use a 32 MiB disk budget;
+  small reports are exported to the boot volume every five minutes. The OS root
+  remains writable; arbitrary
   power-loss immunity is not guaranteed.
 - No playlists, slideshows, streaming, web backend, or remote management.
 

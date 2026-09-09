@@ -13,6 +13,7 @@ from pathlib import Path
 
 SOURCE = Path("/boot/firmware/player")
 CONFIG = Path("/etc/raspi-player")
+SYSTEM_LABWC = Path("/etc/xdg/labwc")
 USERNAME = "player"
 
 
@@ -43,7 +44,8 @@ def install_session(user: pwd.struct_passwd) -> None:
         Path("/usr/share/wayland-sessions/raspi-player.desktop"),
         (
             "[Desktop Entry]\nName=Raspi Player\nType=Application\n"
-            "Exec=labwc -C /etc/raspi-player/labwc\nDesktopNames=labwc\n"
+            "Exec=/usr/bin/systemd-cat --identifier=raspi-session "
+            "/usr/bin/labwc -C /etc/raspi-player/labwc\nDesktopNames=labwc\n"
         ),
     )
     configure_lightdm(Path("/etc/lightdm/lightdm.conf"))
@@ -69,10 +71,23 @@ def configure_lightdm(path: Path) -> None:
 def install_player() -> None:
     CONFIG.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SOURCE / "play.py", CONFIG / "play.py")
+    install_diagnostics()
+    install_labwc()
+    install_media_mount()
+
+
+def install_labwc() -> None:
+    """Keep Pi OS graphics defaults while replacing only the kiosk UI hooks."""
+    directory = CONFIG / "labwc"
+    directory.mkdir(parents=True, exist_ok=True)
+    # -C replaces labwc's search path, including the Pi-specific DRM environment.
+    shutil.copyfile(SYSTEM_LABWC / "environment", directory / "environment")
     for name in ("autostart", "shutdown", "rc.xml"):
-        target = CONFIG / "labwc" / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(SOURCE / name, target)
+        shutil.copyfile(SOURCE / name, directory / name)
+
+
+def install_media_mount() -> None:
+    """Mount the existing video partition read-only, without changing its data."""
     Path("/srv/raspi-player").mkdir(exist_ok=True)
     fstab = Path("/etc/fstab")
     entry = (
@@ -84,12 +99,28 @@ def install_player() -> None:
             stream.write(entry)
 
 
-def finish_setup() -> None:
-    write(Path("/etc/cloud/cloud-init.disabled"), "")
+def install_diagnostics() -> None:
+    """Keep bounded journals and periodic boot-volume reports across reboots."""
+    shutil.copyfile(SOURCE / "diagnose.py", CONFIG / "diagnose.py")
+    Path("/etc/systemd/system/graphical.target.wants/raspi-diagnostics.service").unlink(
+        missing_ok=True
+    )
+    for suffix in ("service", "timer"):
+        shutil.copyfile(
+            SOURCE / f"diagnostics.{suffix}",
+            Path(f"/etc/systemd/system/raspi-diagnostics.{suffix}"),
+        )
     write(
         Path("/etc/systemd/journald.conf.d/player.conf"),
-        "[Journal]\nStorage=volatile\nRuntimeMaxUse=32M\n",
+        "[Journal]\nStorage=persistent\nSystemMaxUse=32M\nSystemMaxFileSize=4M\n"
+        "SystemKeepFree=128M\nRuntimeMaxUse=8M\nMaxRetentionSec=7day\n"
+        "RateLimitIntervalSec=30s\nRateLimitBurst=300\n",
     )
+    run("systemctl", "enable", "raspi-diagnostics.timer")
+
+
+def finish_setup() -> None:
+    write(Path("/etc/cloud/cloud-init.disabled"), "")
     run("systemctl", "set-default", "graphical.target")
     run("systemctl", "enable", "lightdm.service")
     cmdline = Path("/boot/firmware/cmdline.txt")
@@ -111,6 +142,7 @@ def main() -> None:
         "wpctl",
         "labwc",
         "lightdm",
+        "systemd-cat",
         "/usr/lib/userconf-pi/userconf",
     ):
         if shutil.which(binary) is None:

@@ -1,0 +1,13 @@
+# Export bounded diagnostics independently of the graphical session.
+[Unit]
+Description=Raspi Player diagnostic snapshot
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /etc/raspi-player/diagnose.py
+TimeoutStartSec=90
+Nice=19
+IOSchedulingClass=idle
+CPUWeight=1
+IOWeight=1
