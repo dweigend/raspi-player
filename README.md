@@ -6,9 +6,9 @@ player. Select a card, select a video, and create the card. Existing contents ar
 always erased. On first boot, the Pi configures itself, reboots automatically,
 and starts fullscreen video playback on repeat.
 
-**Status:** implemented with automated host tests. Physical SD-card writing,
-first boot, and 4K playback still require the [hardware acceptance tests](docs/validation.md).
-Host tests do not certify Pi playback.
+**Status:** playback and HDMI audio confirmed by the operator on a Pi 5 with an LG
+4K monitor using 1080p at 60 Hz. New cards use this validated HDMI0 configuration.
+Other hardware/video combinations still require [hardware acceptance tests](docs/validation.md).
 
 ## Operator workflow
 
@@ -17,7 +17,7 @@ Host tests do not certify Pi playback.
 3. Click **Choose video** and select a local video file.
 4. Click **Create card** and confirm the exact card to erase.
 5. Wait for preparation, writing, verification, and ejection to finish.
-6. Put the card into the Pi 5, connect a monitor to HDMI0, and power it on.
+6. Put the card into the Pi 5, connect a monitor to HDMI0 (next to USB-C power), and power it on.
 
 No network, keyboard, login, or downloads are needed on the Pi. Allow extra time
 for first-boot setup and its automatic reboot. A short pause between loops is

@@ -17,9 +17,23 @@ FIRST_BOOT_ARGS = (
 
 def player_cmdline(original: str) -> str:
     """Disable stock resizing/cloud setup before adding unattended provisioning."""
-    removed = ("init=", "systemd.run", "systemd.unit=", "cloud-init=", "consoleblank=")
+    removed = (
+        "init=",
+        "systemd.run",
+        "systemd.unit=",
+        "cloud-init=",
+        "consoleblank=",
+        "video=HDMI-A-1:",
+    )
     args = [a for a in original.split() if a != "resize" and not a.startswith(removed)]
-    args.extend(["cloud-init=disabled", "consoleblank=0", *FIRST_BOOT_ARGS])
+    args.extend(
+        [
+            "cloud-init=disabled",
+            "consoleblank=0",
+            "video=HDMI-A-1:1920x1080@60",
+            *FIRST_BOOT_ARGS,
+        ]
+    )
     return " ".join(args) + "\n"
 
 

@@ -98,3 +98,12 @@ def test_boot_disables_resize_and_keeps_root() -> None:
     assert "/old.sh" not in result
     assert "cloud-init=disabled" in result
     assert player_cmdline(result) == result
+
+
+def test_boot_replaces_hdmi0_mode_without_changing_other_outputs() -> None:
+    original = "root=PARTUUID=abcd-02 video=HDMI-A-1:3840x2160@60 video=HDMI-A-2:d"
+    result = player_cmdline(original)
+    assert "video=HDMI-A-1:1920x1080@60" in result.split()
+    assert "3840x2160" not in result
+    assert "video=HDMI-A-2:d" in result.split()
+    assert player_cmdline(result) == result

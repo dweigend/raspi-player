@@ -75,7 +75,7 @@ the reported black screen and flicker still requires the device logs and a boot 
   playback. Collect `journalctl --user -u raspi-player.service -b --no-pager`,
   `systemctl --user status raspi-player.service`, and the LightDM session log
   before attributing the failure to the display or codec. Explicit Pi Wayland
-  output selection is configured, but has not yet been validated on the device.
+  output and HDMI sound were confirmed on the tested Pi 5/LG setup at 1080p60.
 - HDMI sound: connect and power on the monitor before boot. `pw-dump` and
   `wpctl status -n` show the available devices. The service logs the chosen HDMI
   sink or the reason it started without audio. Turn up the monitor's own volume.
@@ -84,6 +84,6 @@ the reported black screen and flicker still requires the device logs and a boot 
 - A 4K monitor does not require a 4K source file: the reported test video is
   1920x1080 H.264 at 25 fps with AAC audio. Fullscreen scales it to the active
   display mode. Check `kmsprint` on the Pi to confirm the actual negotiated mode;
-  no fixed resolution or refresh rate is forced.
+  HDMI0 is configured for 1920x1080 at 60 Hz in both boot and graphical startup.
 - 4K stutter: check the original codec/profile, active cooling, power supply,
   HDMI mode and decoder. Automatic transcoding is not implemented.

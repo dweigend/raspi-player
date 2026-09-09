@@ -44,7 +44,8 @@ keeps its own autostart and window configuration; the stock desktop is not start
 `raspi-session` instead of allowing verbose compositor output to grow a text log.
 
 VLC explicitly uses the Pi OS `wl-dmabuf` output and `wl-xdg-shell` window
-provider inside labwc. The compositor keeps the monitor's preferred display mode;
+provider inside labwc. The kernel requests HDMI0 at 1920x1080/60 Hz; labwc autostart applies the same
+mode with the preinstalled wlr-randr before the checkpoint, logging success or failure.
 VLC scales the video to fullscreen without changing its source resolution.
 The user service starts the installed PipeWire/WirePlumber services concurrently.
 `pw-dump` provides output nodes and connected ALSA routes; `wpctl` unmutes the

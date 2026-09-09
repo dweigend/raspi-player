@@ -89,3 +89,15 @@ old active maintenance hook accidentally. The SD card was not reformatted.
 Host validation: shell/Python syntax checks and read-back equality of all changed
 card files passed. Actual 1080p negotiation and physical picture still require
 another device boot and its report.
+
+
+## Operator acceptance and application update
+
+The operator reported that everything works after the controlled 1080p test.
+This validates the 1080p60 mitigation on the tested Pi/monitor/cable combination;
+it does not identify whether the 4K signal problem originates in timings, the
+cable, input configuration or another part of the HDMI chain.
+
+The application now stages the same kernel and labwc HDMI0 mode for every new
+card. HDMI audio, startup checkpoint and bounded diagnostics remain enabled.
+The installed-image requirements now explicitly include the existing wlr-randr.

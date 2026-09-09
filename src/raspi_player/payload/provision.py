@@ -155,6 +155,7 @@ def main() -> None:
         "pw-dump",
         "wpctl",
         "labwc",
+        "wlr-randr",
         "lightdm",
         "systemd-cat",
         "/usr/lib/userconf-pi/userconf",

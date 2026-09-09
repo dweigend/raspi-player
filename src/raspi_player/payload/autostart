@@ -1,5 +1,13 @@
 #!/bin/sh
 # Import the real compositor session before starting the supervised player.
+# Keep the validated HDMI0 mode before showing the checkpoint or video.
+echo 'DISPLAY_MODE: requesting HDMI-A-1 1920x1080 at 60 Hz'
+if timeout 10 wlr-randr --output HDMI-A-1 --mode 1920x1080@60Hz --scale 1; then
+    echo 'DISPLAY_MODE: 1080p mode accepted'
+else
+    echo 'DISPLAY_MODE: mode request failed; retaining current mode'
+fi
+timeout 5 wlr-randr
 echo 'SESSION_AUTOSTART: compositor ready; starting player checkpoint'
 systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XAUTHORITY XDG_RUNTIME_DIR XDG_SESSION_TYPE
 systemctl --user start raspi-player.service
