@@ -105,7 +105,14 @@ def finish_setup() -> None:
 
 
 def main() -> None:
-    for binary in ("vlc", "labwc", "lightdm", "/usr/lib/userconf-pi/userconf"):
+    for binary in (
+        "vlc",
+        "pw-dump",
+        "wpctl",
+        "labwc",
+        "lightdm",
+        "/usr/lib/userconf-pi/userconf",
+    ):
         if shutil.which(binary) is None:
             raise RuntimeError(f"Required preinstalled program is missing: {binary}")
     user = create_user()

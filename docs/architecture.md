@@ -35,6 +35,15 @@ Wayland environment before starting the service. The runtime validates one local
 file and replaces itself with VLC; systemd retries exited processes after ten
 seconds. This detects process exits, not frozen video decoding.
 
+VLC explicitly uses the Pi OS `wl-dmabuf` output and `wl-xdg-shell` window
+provider inside labwc. The compositor keeps the monitor's preferred display mode;
+VLC scales the video to fullscreen without changing its source resolution.
+The user service starts the installed PipeWire/WirePlumber services first.
+`pw-dump` provides output nodes and connected ALSA routes; `wpctl` unmutes the
+selected HDMI node at unity volume. `PULSE_SINK` routes VLC's PulseAudio output
+to that node. No extra audio packages are required. If HDMI audio is unavailable,
+the player logs the reason and starts video without sound rather than blocking it.
+
 The FATtools integration is confined to exFAT. A bounded standard-file adapter
 avoids its macOS raw-device ioctls. pyfatfs handles stock FAT32 independently.
 

@@ -33,5 +33,19 @@ Until these checks are recorded, playback is **not hardware validated**.
 - First-boot failure: read the Pi boot console. Correct the setup and recreate the card.
 - Playback failure: in a maintenance console inside the player session, inspect
   `journalctl --user -u raspi-player.service`. SSH is not preconfigured.
+- Black screen after boot: successful card writing proves image transfer, not
+  playback. Collect `journalctl --user -u raspi-player.service -b --no-pager`,
+  `systemctl --user status raspi-player.service`, and the LightDM session log
+  before attributing the failure to the display or codec. Explicit Pi Wayland
+  output selection is configured, but has not yet been validated on the device.
+- HDMI sound: connect and power on the monitor before boot. `pw-dump` and
+  `wpctl status -n` show the available devices. The service logs the chosen HDMI
+  sink or the reason it started without audio. Turn up the monitor's own volume.
+  A monitor that exposes no available HDMI audio route is treated as video-only.
+  If audio becomes available after startup, restart the player service or reboot.
+- A 4K monitor does not require a 4K source file: the reported test video is
+  1920x1080 H.264 at 25 fps with AAC audio. Fullscreen scales it to the active
+  display mode. Check `kmsprint` on the Pi to confirm the actual negotiated mode;
+  no fixed resolution or refresh rate is forced.
 - 4K stutter: check the original codec/profile, active cooling, power supply,
   HDMI mode and decoder. Automatic transcoding is not implemented.

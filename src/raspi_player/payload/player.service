@@ -1,6 +1,8 @@
 # Own the single VLC process inside the ready kiosk session.
 [Unit]
 Description=Offline Raspberry Pi video player
+Wants=pipewire.service pipewire-pulse.service wireplumber.service
+After=pipewire.service pipewire-pulse.service wireplumber.service
 StartLimitIntervalSec=0
 
 [Service]
