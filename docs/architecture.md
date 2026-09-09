@@ -13,6 +13,11 @@ device is checked again. Raspberry Pi Imager then owns privileged device access,
 locking, writing, readback verification and eject. Its verification and system-disk
 protections remain enabled. Failed preparation never reaches the native writer.
 
+On macOS, the Imager child receives `QT_EVENT_DISPATCHER_CORE_FOUNDATION=1`.
+Imager 2.0.11.1 dispatches unmount/eject operations to the main queue, which Qt's
+default UNIX CLI event dispatcher does not service. The native Core Foundation
+dispatcher delivers these callbacks without replacing Imager's disk handling.
+
 | Partition | Content | Runtime access |
 | --- | --- | --- |
 | FAT32 boot | Stock firmware, staged Python provisioner | OS managed |

@@ -1,11 +1,22 @@
 """Delegate device locking, privileged writes, verification and eject to Imager."""
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 from raspi_player.files import Progress
 from raspi_player.models import Device
+
+
+def imager_environment() -> dict[str, str]:
+    """Let macOS CLI unmount/eject callbacks run on the native main run loop."""
+    environment = os.environ.copy()
+    if sys.platform == "darwin":
+        # Imager dispatches DiskArbitration work to the main queue; Qt's default
+        # UNIX CLI dispatcher never services it, blocking before writing starts.
+        environment["QT_EVENT_DISPATCHER_CORE_FOUNDATION"] = "1"
+    return environment
 
 
 def find_imager(assets: Path) -> Path:
@@ -43,6 +54,7 @@ def write_card(inputs: tuple[Path, Path], device: Device, progress: Progress) ->
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=imager_environment(),
     ) as process:
         assert process.stdout is not None
         recent: list[str] = []
