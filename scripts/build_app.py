@@ -100,6 +100,8 @@ def package_mac(root: Path) -> None:
             "Diese Ausgabe ist nicht von Apple notarisiert.\n"
             "Falls macOS sie blockiert:\n"
             "Systemeinstellungen > Datenschutz & Sicherheit > Dennoch öffnen.\n\n"
+            "macOS fragt dabei eventuell nach deinem Mac-Anmeldepasswort.\n"
+            "Beim Schreiben kann erneut ein Administratorpasswort nötig sein.\n\n"
             "README.html per Doppelklick für die bebilderte Anleitung öffnen.\n"
             "Python oder Terminal sind zur Nutzung nicht erforderlich.\n",
             encoding="utf-8",

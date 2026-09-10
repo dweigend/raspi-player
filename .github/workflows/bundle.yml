@@ -54,6 +54,12 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
+          if gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft' > release-draft.txt; then
+            if [ "$(cat release-draft.txt)" = false ]; then
+              echo "Release already published; keeping its verified assets unchanged."
+              exit 0
+            fi
+          fi
           cat > release-notes.md <<'EOF'
           Download the macOS DMG matching your Mac's architecture, open it, and drag Raspi Player to Applications. Python and the offline inputs are included.
 
@@ -61,7 +67,9 @@ jobs:
 
           Windows users should extract the complete ZIP folder before opening the application. These downloads do not include operator videos.
           EOF
-          gh release create "$RELEASE_TAG" --verify-tag --draft \
-            --title "Raspi Player $RELEASE_TAG" --notes-file release-notes.md
+          if ! gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --draft \
+              --title "Raspi Player $RELEASE_TAG" --notes-file release-notes.md
+          fi
           find artifacts -type f \( -name '*.dmg' -o -name '*.sha256' -o -name '*.zip' \) \
             -exec gh release upload "$RELEASE_TAG" {} +

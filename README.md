@@ -19,10 +19,13 @@ oder Anmeldung. Python und Terminal brauchst du für die fertige App nicht.
 
 ## 1. App bekommen und öffnen
 
-Die fertige Datei **`Raspi-Player-0.1.0-macos-arm64.dmg`** erhältst du vom
-Projektbetreuer. Das Repository ist privat; derzeit gibt es keinen öffentlichen
-Download. Wer Zugriff auf das Repository hat, kann nach einer Veröffentlichung
-auch unter [Releases](https://github.com/dweigend/raspi-player/releases) nachsehen.
+**[Mac-App herunterladen (DMG, etwa 1,3 GB)](https://github.com/dweigend/raspi-player/releases/download/v0.1.0/Raspi-Player-0.1.0-macos-arm64.dmg)**
+
+Der Download liegt im [GitHub-Release v0.1.0](https://github.com/dweigend/raspi-player/releases/tag/v0.1.0).
+Das Repository ist privat: Melde dich mit einem GitHub-Konto an, das Zugriff auf
+das Projekt hat. Bei einer 404-Meldung fehlt meist die Anmeldung oder Freigabe;
+wende dich dann an den Projektbetreuer. Lade die **DMG-Datei** herunter, nicht
+„Source code“. Ein App-Store-Konto ist nicht erforderlich.
 
 1. Öffne die erhaltene **DMG-Datei** mit einem Doppelklick.
 2. Ziehe **Raspi Player.app** auf **Applications** (Programme).
@@ -43,10 +46,15 @@ Projektbetreuer erhalten hast und ihr vertraust. Die Ausnahme gilt nur für dies
 App. [Apples Anleitung zum Öffnen solcher Apps](https://support.apple.com/de-de/102445)
 beschreibt die einzelnen Schritte.
 
+macOS kann dabei dein **Mac-Anmeldepasswort** verlangen. Gib es nur in der
+macOS-Systemabfrage ein; ein Apple-Account-Passwort oder ein Passwort für Raspi
+Player brauchst du nicht. Auf verwalteten Firmen-Macs kann die IT diese Freigabe
+sperren. [Apple beschreibt auch die Passwortabfrage](https://support.apple.com/de-de/guide/mac-help/mh40616/mac).
+
 So sieht die App nach dem Öffnen aus. **Refresh cards** sucht nach SD-Karten;
 mit **Choose video…** wählst du anschließend deine Videodatei.
 
-![Startfenster der Mac-App mit markierter Kartenaktualisierung und Videoauswahl](docs/screenshots/start-annotated.png)
+![Startfenster der Mac-App mit markierter Kartenaktualisierung und Statusanzeige](docs/screenshots/start-annotated.png)
 
 ## 2. SD-Karte und Video auswählen
 
@@ -74,7 +82,9 @@ Prüfe beides. Klicke nur bei der richtigen Karte auf **Yes**; mit **No** brichs
 
 Die App bereitet das System vor, schreibt die Karte, prüft das Ergebnis und wirft
 sie aus. Erlaube gegebenenfalls den macOS-Zugriff auf Wechselmedien und bestätige
-die Administratorabfrage für das Schreiben.
+die Administratorabfrage für das Schreiben. Dabei kann macOS **erneut ein
+Administratorpasswort** verlangen; diese Freigabe ist von der ersten
+Öffnungsbestätigung getrennt.
 
 **Lass die Karte eingesteckt und die App geöffnet, bis unten „Ready. Insert the
 card into your Pi 5 and power it on.“ steht.** Die Vorbereitung und Prüfung können

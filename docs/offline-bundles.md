@@ -91,16 +91,23 @@ uses standard UAC for writing. A macOS build cannot generate a Windows executabl
 
 ## Distribution and acceptance
 
-The repository is private and currently has no published release. Give the DMG
-directly to recipients; a private repository URL is not a public download.
-If a release is published, its [Releases page](https://github.com/dweigend/raspi-player/releases)
-is accessible only to people authorized for the repository.
+The macOS DMG and checksum are distributed through
+[GitHub Releases](https://github.com/dweigend/raspi-player/releases/tag/v0.1.0).
+The repository is private: recipients must sign in with an account that has
+repository access. A private release URL is not an anonymous public download.
+The main README links directly to the DMG and explains first-launch approval,
+the Mac login-password prompt and the separate administrator prompt for writing.
+
+An App Store submission is not required for this distribution route. See the
+[reviewed Apple terms and opening instructions](apple-distribution.md).
 
 The **Offline bundles** workflow runs manually or when a `v*` tag is pushed.
 Both triggers produce native build artifacts. A tag run also creates a **draft**
 GitHub release containing the macOS DMG, its checksum and the Windows ZIP after
 both platform builds succeed. A maintainer must review and publish that draft;
-the workflow does not publish it automatically. Manual runs only upload artifacts.
+the workflow does not publish it automatically or modify an already published
+release. Manual runs only upload artifacts. A maintainer may also publish a
+locally verified build directly through GitHub Releases.
 Workflow artifacts require repository access, expire after 14 days and depend on
 available Actions storage. A successful local build does not prove that a
 downloadable artifact or release has been uploaded.
