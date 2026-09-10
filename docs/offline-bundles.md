@@ -108,6 +108,12 @@ both platform builds succeed. A maintainer must review and publish that draft;
 the workflow does not publish it automatically or modify an already published
 release. Manual runs only upload artifacts. A maintainer may also publish a
 locally verified build directly through GitHub Releases.
+The manually dispatched **macOS release upload** workflow builds an Apple Silicon
+DMG with Python 3.13.11 and uploads it directly to an existing draft. Its
+`release_tag` must match the package version and the draft must target the exact
+workflow commit. It replaces assets only while the release is a draft, avoiding
+large local uploads and Actions artifact-storage usage. Publishing remains a
+separate step after verification.
 Workflow artifacts require repository access, expire after 14 days and depend on
 available Actions storage. A successful local build does not prove that a
 downloadable artifact or release has been uploaded.
