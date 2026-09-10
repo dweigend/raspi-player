@@ -2,6 +2,8 @@
 name: Offline bundles
 on:
   workflow_dispatch:
+  push:
+    tags: ['v*']
 permissions:
   contents: read
 jobs:
@@ -15,18 +17,51 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run ty check --exclude src/raspi_player/payload
+      - run: uv run ty check --python-platform linux src/raspi_player/payload
       - run: uv run pytest
       - run: uv run raspi-player prepare-offline
       - run: uv run python scripts/build_app.py
-      - name: Archive macOS bundle preserving application symlinks
-        if: runner.os == 'macOS'
-        run: ditto -c -k --sequesterRsrc --keepParent dist raspi-player-macos.zip
       - name: Archive Windows bundle
         if: runner.os == 'Windows'
         run: Compress-Archive -Path 'dist/Raspi Player' -DestinationPath raspi-player-windows.zip
       - uses: actions/upload-artifact@v4
         with:
           name: raspi-player-${{ matrix.os }}
-          path: raspi-player-*.zip
+          path: |
+            dist/Raspi-Player-*.dmg
+            dist/Raspi-Player-*.dmg.sha256
+            raspi-player-windows.zip
           compression-level: 0
           retention-days: 14
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: bundle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Prepare a release draft for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          cat > release-notes.md <<'EOF'
+          Download the macOS DMG matching your Mac's architecture, open it, and drag Raspi Player to Applications. Python and the offline inputs are included.
+
+          This build is ad-hoc signed and is not notarized by Apple. See the main README for first-launch instructions and the illustrated card-creation guide. Selected SD cards are erased.
+
+          Windows users should extract the complete ZIP folder before opening the application. These downloads do not include operator videos.
+          EOF
+          gh release create "$RELEASE_TAG" --verify-tag --draft \
+            --title "Raspi Player $RELEASE_TAG" --notes-file release-notes.md
+          find artifacts -type f \( -name '*.dmg' -o -name '*.sha256' -o -name '*.zip' \) \
+            -exec gh release upload "$RELEASE_TAG" {} +

@@ -65,7 +65,10 @@ the reported black screen and flicker still requires the device logs and a boot 
 
 - No card: refresh, inspect the reader's write-protect switch. Unknown/virtual
   devices and non-512-byte sectors are rejected.
-- Missing assets: run `prepare-offline` online or restore the adjacent `offline` folder.
+- Missing assets: on macOS, copy the complete app from the DMG into Applications
+  again; its offline assets are inside the app. On Windows, restore the complete
+  portable folder including its adjacent `offline` directory. When running from
+  source, run `prepare-offline` online.
 - Not enough space: free host temporary space or choose a larger card.
 - Imager failure: the card is not ready. Reconnect and create it again; do not disable verification.
 - First-boot failure: read the Pi boot console. Correct the setup and recreate the card.

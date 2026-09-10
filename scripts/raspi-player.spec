@@ -1,5 +1,5 @@
 # Package the native GUI with explicit macOS identity and privacy descriptions.
-# Only bundles host code and runtime dependencies; offline inputs stay adjacent.
+# Bundles host code and runtime dependencies; build_app.py adds offline inputs.
 import sys
 from pathlib import Path
 
@@ -40,6 +40,8 @@ if sys.platform == "darwin":
         bundle_identifier="com.dweigend.raspi-player",
         info_plist={
             "CFBundleShortVersionString": "0.1.0",
+            "CFBundleVersion": "0.1.0",
+            "LSMinimumSystemVersion": "13.0",
             "NSHighResolutionCapable": True,
             "NSRemovableVolumesUsageDescription": (
                 "Raspi Player needs access to detect your SD card and prepare "

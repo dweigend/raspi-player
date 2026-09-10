@@ -1,0 +1,15 @@
+/* Styles for the offline HTML copy of the main README. */
+body {
+  max-width: 860px;
+  margin: 48px auto;
+  padding: 0 24px;
+  font: 17px/1.6 system-ui, sans-serif;
+  color: #232323;
+  background: #fff;
+}
+img { max-width: 100%; height: auto; }
+a { color: #1658ad; }
+pre { overflow-x: auto; padding: 16px; background: #f3f4f5; }
+table { border-collapse: collapse; }
+th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+summary { cursor: pointer; font-weight: 600; }

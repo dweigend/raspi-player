@@ -180,7 +180,7 @@ class PlayerWindow:
 
 
 def launch(assets: Path | None = None) -> None:
-    """Launch the native UI with adjacent offline assets."""
+    """Launch the native UI with the distribution's offline assets."""
     root = create_root()
     PlayerWindow(root, assets or offline_directory())
     root.mainloop()

@@ -17,12 +17,12 @@ PAYLOAD = Path(__file__).parent / "payload"
 
 
 def offline_directory() -> Path:
-    """Find adjacent assets in a portable bundle or the checkout's offline folder."""
+    """Find app-contained macOS assets or adjacent Windows/source assets."""
     import sys
 
     if getattr(sys, "frozen", False):
         executable = Path(sys.executable).resolve()
         if executable.parent.name == "MacOS":
-            return executable.parents[3] / "offline"
+            return executable.parent.parent / "Resources" / "offline"
         return executable.parent / "offline"
     return Path.cwd() / "offline"
